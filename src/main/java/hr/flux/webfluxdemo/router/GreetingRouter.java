@@ -11,6 +11,10 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
 import static org.springframework.web.reactive.function.server.RequestPredicates.accept;
 
+/**
+ * Router
+ * - URI 상의 path를 listen 하고, 핸들러에서 제공하는 값을 리턴
+ */
 @Configuration(proxyBeanMethods = false)
 public class GreetingRouter {
 
