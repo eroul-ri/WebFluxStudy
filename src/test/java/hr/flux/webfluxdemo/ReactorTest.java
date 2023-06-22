@@ -160,4 +160,35 @@ public class ReactorTest {
                 .expectNextMatches((pre) -> pre.getT1().equals("BLUE") && pre.getT2().equals("Grape"))
                 .verifyComplete();
     }
+
+    @Test
+    public void zipFluxesString() {
+        String [] colors = getColorArray();
+        String [] fruit = getFruitArray();
+
+        Flux<String> colorFlux = arrayToFlux(colors);
+        Flux<String> fruitFlux = arrayToFlux(fruit);
+        // 한 항목씩 번갈아가져 옴.
+        Flux<String> zippedFlux = Flux.zip(colorFlux, fruitFlux, (f, s)-> f.concat(" ").concat(s));
+
+        StepVerifier.create(zippedFlux)
+                .expectNext("RED Apple")
+                .expectNext("BLACK Orange")
+                .expectNext("BLUE Grape")
+                .verifyComplete();
+    }
+
+    @Test
+    public void firstFlux() {
+        Flux<String> slowFlux = Flux.just("snail", "turtle")
+                                    .delaySubscription(Duration.ofMillis(300));
+        Flux<String> fastFlux = Flux.just("rabbit", "cheetah");
+
+        Flux<String> firstFlux = Flux.firstWithSignal(slowFlux, fastFlux);
+
+        StepVerifier.create(firstFlux)
+                .expectNext("rabbit")
+                .expectNext("cheetah")
+                .verifyComplete();
+    }
 }
