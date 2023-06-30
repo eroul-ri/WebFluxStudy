@@ -181,7 +181,7 @@ public class ReactorTest {
     @Test
     public void firstFlux() {
         Flux<String> slowFlux = Flux.just("snail", "turtle")
-                                    .delaySubscription(Duration.ofMillis(300));
+                .delaySubscription(Duration.ofMillis(300));
         Flux<String> fastFlux = Flux.just("rabbit", "cheetah");
 
         Flux<String> firstFlux = Flux.firstWithSignal(slowFlux, fastFlux);
@@ -189,6 +189,52 @@ public class ReactorTest {
         StepVerifier.create(firstFlux)
                 .expectNext("rabbit")
                 .expectNext("cheetah")
+                .verifyComplete();
+    }
+
+    @Test
+    public void skipFluxItem() {
+        Flux<String> flux = Flux.just("one skip", "two skip", "three skip", "four", "five", "six")
+                                .skip(3);
+//        flux.subscribe(System.out::println);
+        StepVerifier.create(flux)
+                    .expectNext("four")
+                    .expectNext("five")
+                    .expectNext("six")
+                    .verifyComplete();
+    }
+
+    @Test
+    public void skipFluxDelay() {
+        Flux<String> flux = Flux.just("one skip", "two skip", "three skip", "four", "five", "six")
+                                .delayElements(Duration.ofSeconds(1)) // ns간 지연방출
+                                .skip(Duration.ofSeconds(3)); // ns skip
+        StepVerifier.create(flux)
+                .expectNext("three skip")
+                .expectNext("four")
+                .expectNext("five")
+                .expectNext("six")
+                .verifyComplete();
+    }
+
+    @Test
+    public void takeFlux() {
+        Flux<String> colorFlux = Flux.just("blue", "red", "violet", "pink")
+                                     .take(3);
+
+        StepVerifier.create(colorFlux)
+                .expectNext("blue", "red", "violet")
+                .verifyComplete();
+    }
+
+    @Test
+    public void takeFluxDelay() {
+        Flux<String> colorFlux = Flux.just("blue", "red", "violet", "pink")
+                                     .delayElements(Duration.ofSeconds(1))
+                                     .take(Duration.ofMillis(2500));
+
+        StepVerifier.create(colorFlux)
+                .expectNext("blue", "red")
                 .verifyComplete();
     }
 }
