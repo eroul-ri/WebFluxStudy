@@ -1,15 +1,33 @@
 package hr.flux.webfluxdemo;
 
+import hr.flux.webfluxdemo.model.Greeting;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
 import reactor.util.function.Tuple2;
 
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.List;
 
+/**
+ * Publisher - 발행자
+ * Subscriber - 구독자
+ * Subscription - 구독
+ * Processor - 프로세서
+ */
 public class ReactorTest {
+
+
+    public String [] getFruitArray() {
+        return new String[] {"Apple", "Orange", "Grape"};
+    }
+    public String [] getColorArray() {
+        return new String[] {"RED", "BLACK", "BLUE", "PINK"};
+    }
+
     @Test
     public void testMonoJust() {
         Mono.just("Greeting")
@@ -29,12 +47,6 @@ public class ReactorTest {
                 .verifyComplete();
     }
 
-    public String [] getFruitArray() {
-        return new String[] {"Apple", "Orange", "Grape"};
-    }
-    public String [] getColorArray() {
-        return new String[] {"RED", "BLACK", "BLUE", "PINK"};
-    }
     @Test
     public void createFluxFromArray() {
         Flux<String> flux = Flux.fromArray(getFruitArray());
@@ -235,6 +247,53 @@ public class ReactorTest {
 
         StepVerifier.create(colorFlux)
                 .expectNext("blue", "red")
+                .verifyComplete();
+    }
+
+    @Test
+    public void filterFlux() {
+        Flux<String> messageFlux = Flux.just("Hi Flux!", "hi", "hello", "nice", "good", "perfect", "perfect score")
+                                       .filter(m -> m.contains(" "));
+
+        StepVerifier.create(messageFlux)
+                .expectNext("Hi Flux!", "perfect score")
+                .verifyComplete();
+    }
+
+    @Test
+    public void distinctFlux() {
+        Flux<String> messageFlux = Flux.just("hello", "hi", "hi", "perfect", "hello")
+                                       .distinct();
+
+        StepVerifier.create(messageFlux)
+                .expectNext("hello", "hi", "perfect")
+                .verifyComplete();
+    }
+
+    /**
+     * map - synchronized
+     */
+    @Test
+    public void mapFlux() {
+        Flux<Greeting> greetingFlux = Flux.just( "hi", "hello")
+                                          .map(Greeting::new);
+
+        greetingFlux.subscribe(System.out::println);
+    }
+
+    @Test
+    public void flatMapFlux() {
+        Flux<Greeting> greetingFlux = Flux.just( "hi", "hello")
+                                          .flatMap(
+                                                  v-> Mono.just(v).map(n-> new Greeting(n))
+                                          )
+                                          .subscribeOn(Schedulers.parallel());
+
+        List<Greeting> greetings = Arrays.asList(new Greeting("hi"), new Greeting("hello"));
+
+        StepVerifier.create(greetingFlux)
+                .expectNextMatches(pre-> greetings.get(0).getMessage().equals(pre.getMessage()))
+                .expectNextMatches(pre-> greetings.get(1).getMessage().equals(pre.getMessage()))
                 .verifyComplete();
     }
 }
