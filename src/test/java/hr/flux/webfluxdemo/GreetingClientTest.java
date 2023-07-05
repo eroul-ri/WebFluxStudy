@@ -10,15 +10,16 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 //@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class GreetingClientTest {
 
-    @Autowired
-    WebTestClient webTestClient;
-    @Test
-    public void testGreeting() {
-        webTestClient.get()
-                     .uri("/greeting")
-                     .accept(MediaType.APPLICATION_JSON)
-                     .exchange()
-                     .expectStatus().isOk();
-    }
+	@Autowired
+	WebTestClient webTestClient;
+
+	@Test
+	public void testGreeting() {
+		webTestClient.get()
+					 .uri("/greeting")
+					 .accept(MediaType.APPLICATION_JSON)
+					 .exchange()
+					 .expectStatus().isOk();
+	}
 
 }
